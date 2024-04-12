@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Chart Generator</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#generate-chart-form').on('submit', function(event) {
+                event.preventDefault();  // Prevent default form submission
+
+                // Serialize form data
+                var formData = $(this).serialize();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/generate_chart',
+                    data: formData,
+                    success: function(response) {
+                        // Update chart container with generated chart HTML
+                        $('#chart-container').html(response.chart_html);
+                    },
+                    error: function(error) {
+                        console.error('Error generating chart:', error);
+                        alert('Error generating chart: ' + error.responseJSON.error_message);
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Stock Chart Generator</h1>
+
+    <form id="generate-chart-form" method="POST" action="/generate_chart">
+
+        <label for="stock_symbol">Stock Symbol:</label>
+        <select id="stock_symbol" name="stock_symbol" required>
+            <option value="" style="display:none;">Select a Symbol</option>
+
+            {% for ticker in tickers %}
+            <option value="{{ ticker }}">{{ ticker }}</option>
+            {% endfor %}
+        </select><br>
+          
+        <label for="chart_type">Chart Type:</label>
+        <select id="chart_type" name="chart_type" required>
+            <option value="" style="display:none;">Select a Graph Style</option>
+            <option value="1">Bar</option>
+            <option value="2">Line</option>
+        </select><br>
+
+        <label for="time_series_function">Time Series Function:</label>
+        <select id="time_series_function" name="time_series_function" required>
+            <option value="" style="display:none;">Select a Time Series</option>
+            <option value="1">Intraday</option>
+            <option value="2">Daily</option>
+            <option value="3">Weekly</option>
+            <option value="4">Monthly</option>
+        </select><br>
+
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" required><br>
+
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" required><br>
+
+        <button type="submit">Generate Chart</button>
+    </form>
+
+    <div id="chart-container">
+        <!-- Generated chart will be displayed here -->
+    </div>
+
+    <!-- Display error message if any -->
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+</body>
+</html>
